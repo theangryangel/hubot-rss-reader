@@ -30,7 +30,7 @@
     "feedparser": "*",
     "find-rss": "*",
     "html-entities": "*",
-    "iconv": "*",
+    "iconv-lite": "*",
     "irc-colors": "^1.1.1",
     "lodash": "*",
     "request": "*"
