@@ -19,7 +19,7 @@ module.exports = ->
       charset = m[1]
       debug "charset: #{charset}"
     if charset?
-      @push iconv.decode(chunk)
+      @push iconv.decode(chunk, charset)
     else
       @push chunk
     next()
