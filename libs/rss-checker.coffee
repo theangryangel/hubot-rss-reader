@@ -17,6 +17,7 @@ debug      = require('debug')('hubot-rss-reader:rss-checker')
 cheerio    = require 'cheerio'
 Promise    = require 'bluebird'
 IrcColor   = require 'irc-colors'
+sprintf    = require('sprintf-js').sprintf
 
 charsetConvertStream = require './charset-convert-stream'
 Entries = require './entries'
@@ -80,17 +81,21 @@ module.exports = class RSSChecker extends events.EventEmitter
           url: chunk.link
           title: entities.decode(chunk.title or '')
           summary: cleanup_summary entities.decode(chunk.summary or chunk.description or '')
+          comments: chunk.comments
           feed:
             url: args.url
             title: entities.decode(feedparser.meta.title or '')
           toString: ->
-            if process.env.HUBOT_RSS_IRCCOLORS is "true"
-              s = "#{IrcColor.pink(process.env.HUBOT_RSS_HEADER)} #{@title} #{IrcColor.purple('- ['+@feed.title+']')}\n#{IrcColor.lightgrey.underline(@url)}"
+            if process.env.HUBOT_RSS_TEMPLATED_OUTPUT?.length > 0
+              s = sprintf(process.env.HUBOT_RSS_TEMPLATED_OUTPUT, { feed_title: @feed.title, feed_url: @feed.url, url: @url, title: @title, summary: @summary, comments_url: @comments })
             else
-              s = "#{process.env.HUBOT_RSS_HEADER} #{@title} - [#{@feed.title}]\n#{@url}"
+              if process.env.HUBOT_RSS_IRCCOLORS is "true"
+                s = "#{IrcColor.pink(process.env.HUBOT_RSS_HEADER)} #{@title} #{IrcColor.purple('- ['+@feed.title+']')}\n#{IrcColor.lightgrey.underline(@url)}"
+              else
+                s = "#{process.env.HUBOT_RSS_HEADER} #{@title} - [#{@feed.title}]\n#{@url}"
 
-            if process.env.HUBOT_RSS_PRINTSUMMARY is "true" and @summary?.length > 0
-              s += "\n#{@summary}"
+              if process.env.HUBOT_RSS_PRINTSUMMARY is "true" and @summary?.length > 0
+                s += "\n#{@summary}"
             return s
           args: args
 
